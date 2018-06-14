@@ -1,26 +1,63 @@
-// Box width
-var bw = 400;
-// Box height
-var bh = 400;
-// Padding
-var p = 10;
 
-function drawBoard(){
-  var canvas = document.getElementById("canvas");
-  var context = canvas.getContext("2d");
-  for (var x = 0; x <= bw; x += 40) {
-      context.moveTo(0.5 + x + p, p);
-      context.lineTo(0.5 + x + p, bh + p);
+var ca = {canvas:null,ctx:null,cellWidth:10};
+
+ca.drawBoard = function(){
+  ca.cellWidth = parseInt(document.getElementById("input_cell").value);
+  // Box width
+  var bw = ca.canvas.width - (ca.canvas.width%ca.cellWidth) +1;
+  // Box height
+  var bh = ca.canvas.height- (ca.canvas.height%ca.cellWidth) +1;
+
+  
+  ca.ctx.beginPath();
+  
+  var x;
+  for (x = 0; x <= bw; x += ca.cellWidth) {
+      ca.ctx.moveTo(0.5 + x, 0);
+      ca.ctx.lineTo(0.5 + x, bh);
   }
   
   
-  for (var x = 0; x <= bh; x += 40) {
-      context.moveTo(p, 0.5 + x + p);
-      context.lineTo(bw + p, 0.5 + x + p);
+  for (x = 0; x <= bh; x += ca.cellWidth) {
+      ca.ctx.moveTo(0, 0.5 + x);
+      ca.ctx.lineTo(bw, 0.5 + x);
   }
   
-  context.strokeStyle = "black";
-  context.stroke();
+  ca.ctx.strokeStyle = "black";
+  ca.ctx.stroke();
+};
+
+ca.init = function(){
+  ca.canvas = document.getElementById('canvas');
+  ca.ctx = ca.canvas.getContext('2d');
+  //ca.canvas.addEventListener('keydown',ca.fillCell())
+  
+  document.getElementById("input_cell").addEventListener('input',ca.drawStuff);
+
+  // resize the canvas to fill browser window dynamically
+  window.addEventListener('resize', ca.resizeCanvas, false);
+  ca.resizeCanvas();
+};
+
+ca.resizeCanvas = function() {
+  ca.canvas.width = window.innerWidth;
+  ca.canvas.height = window.innerHeight - ca.canvas.offsetTop;
+
+  /**
+   * Your drawings need to be inside this function otherwise they will be reset when
+   * you resize the browser window and the canvas goes will be cleared.
+   */
+  ca.drawStuff();
+};
+
+ca.drawStuff = function() {
+  ca.ctx.clearRect(0, 0, ca.canvas.width, ca.canvas.height);
+  ca.drawBoard();
+  ca.ctx.fillRect(ca.canvas.width/2,10,1,1);
+};
+
+ca.pixelToGrid = function(pixelPoint){
+  return new Point((pixelPoint.x/ca.cellWidth).toFixed(0),(pixelPoint.y/ca.cellWidth).toFixed(0))
 }
 
-drawBoard();
+window.addEventListener("load", ca.init());
