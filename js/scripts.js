@@ -35,8 +35,8 @@ ca.drawBoard = function(){
 ca.init = function(){
   ca.canvas = document.getElementById('canvas');
   ca.ctx = ca.canvas.getContext('2d');
-  ca.canvas.addEventListener('click',function(){
-    let point = {x:event.clientX,y:event.clientY-ca.canvas.offsetTop};
+  ca.canvas.addEventListener('mousedown',function(){
+    let point = {x:event.clientX-ca.canvas.offsetLeft,y:event.clientY-ca.canvas.offsetTop};
     ca.fillCell(ca.pixelToGrid(point));
     
   });
@@ -59,30 +59,31 @@ ca.resizeCanvas = function() {
   ca.drawStuff();
 };
 
-ca.drawStuff = function() {
-  ca.ctx.clearRect(0, 0, ca.canvas.width, ca.canvas.height);
-  ca.drawBoard();
-  ca.ctx.fillRect(ca.canvas.width/2,10,1,1);
-};
-
 ca.fillCell = function(cell){
   pixel = ca.gridToPixel(cell,cellBorders.TOP,cellBorders.LEFT);
   ca.ctx.fillRect(pixel.x,pixel.y,ca.cellWidth,ca.cellWidth);
 };
 
 ca.pixelToGrid = function(pixelPoint){
-  return {x:(pixelPoint.x/ca.cellWidth).toFixed(0),y:(pixelPoint.y/ca.cellWidth).toFixed(0)};
+  return {x:Math.floor((pixelPoint.x/ca.cellWidth)),y:Math.floor(pixelPoint.y/ca.cellWidth)};
 };
 
 ca.gridToPixel = function(cell,hBorder,vBorder){
   var pixel = {x:cell.x*ca.cellWidth,y:cell.y*ca.cellWidth};
   if(hBorder === cellBorders.BOTTOM){
-    pixel.y+=ca.cellWidth;
+    pixel.x+=ca.cellWidth;
   }
   if(vBorder === cellBorders.RIGHT){
     pixel.y+=ca.cellWidth;
   }
   return pixel;
+};
+
+ca.drawStuff = function() {
+  ca.ctx.clearRect(0, 0, ca.canvas.width, ca.canvas.height);
+  ca.drawBoard();
+  ca.ctx.fillRect(ca.canvas.width/2,10,1,1);
+  ca.fillCell({x:3,y:3})
 };
 
 window.addEventListener("load", ca.init());
