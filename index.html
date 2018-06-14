@@ -15,14 +15,26 @@
   <![endif]-->
 </head>
 <body>
-  <div>
-    <h3>Grid settings</h3>
-    <form>
-      <div class="form-group">
-        <label for="input_cell">Cell width</label>
-        <input type="number" class="form-control" id="input_cell" value="10">
+  <div class="row">
+    <div class="col-6">
+      <h3>Grid settings</h3>
+      <form>
+        <div class="form-group">
+          <label for="input_cell">Cell width</label>
+          <input type="number" class="form-control" id="input_cell" value="20">
+        </div>
+      </form>
+    </div>
+    <div class="col-6">
+      <h3>Cellular Automata settings</h3>
+      <form>
+        <div class="form-group">
+          <label for="input_rule">Rule (decimal)</label>
+          <input type="number" class="form-control" id="input_rule" min="0" max="255">
+        </div>
+      </form>
+      <canvas class="col-12" id="canvas_rule"></canvas>
       </div>
-    </form>
   </div>
   
   <canvas id="canvas" style="background: #fff;"></canvas>
