@@ -79,8 +79,14 @@ var grid = {
   drawStuff : function() {
     grid.ctx.clearRect(0, 0, grid.canvas.width, grid.canvas.height);
     grid.drawBoard();
-    grid.ctx.fillRect(grid.canvas.width/2,10,1,1);
-    grid.fillCell({x:3,y:3})
+    for (var i = 0; i < model.length; i++) {
+      if(model[i]){
+        for (var j = 0; j <model[i].length; j++) {
+          if(model[i][j])
+            grid.fillCell({x:j,y:i});
+        }
+      }
+    }
   }
 };
 
@@ -123,6 +129,17 @@ var ruleDesigner = {
     
   }
 };
+
+var modelController = {
+  // le modèle est mode : tableau de ligne, avec chaque ligne qui est un tableau de case.
+
+  set : function(point,value){
+    if(!model[point.y]){
+      model[point.y] = [];
+    }
+    model[point.y][point.x] = value;
+  }
+}
   
 var model = [];
 init = function(){
@@ -136,7 +153,8 @@ init = function(){
   grid.canvas.addEventListener('mousedown',function(event){
     var point = {x:event.clientX-grid.canvas.offsetLeft,y:event.clientY-grid.canvas.offsetTop};
     //grid.fillCell(grid.pixelToGrid(point));
-    model[point.x][point.y] = true    
+    modelController.set(grid.pixelToGrid(point),true);
+    grid.drawStuff();    
   });
   
   document.getElementById("input_cell").addEventListener('input',grid.drawStuff);
