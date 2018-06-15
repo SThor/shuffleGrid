@@ -16,7 +16,8 @@ var grid = {
     var bw = grid.canvas.width - (grid.canvas.width%grid.cellWidth) +1;
     // Box height
     var bh = grid.canvas.height- (grid.canvas.height%grid.cellWidth) +1;
-  
+    modelController.gridLength = (bw-1)/grid.cellWidth;
+    modelController.gridHeight = (bh-1)/grid.cellWidth;
     
     grid.ctx.beginPath();
     
@@ -38,9 +39,11 @@ var grid = {
 
   drawModel : function(){
     for (var i = 0; i < model.length; i++) {
-      for (var j = 0; j < model[i].length; j++) {
-        if(model[i][j])
-        grid.fillCell({x:i,y:j})
+      if(model[i]){
+        for (var j = 0; j < model[i].length; j++) {
+          if(model[i][j])
+          grid.fillCell({x:i,y:j});
+        }
       }
     }
   },
@@ -132,29 +135,58 @@ var ruleDesigner = {
 
 var modelController = {
   // le modèle est mode : tableau de ligne, avec chaque ligne qui est un tableau de case.
-
+  currentLine : 0,
+  gridLength : 0,
   set : function(point,value){
     if(!model[point.y]){
       model[point.y] = [];
     }
     model[point.y][point.x] = value;
+  },
+  getValue : function(point){
+    if(model[point.y] && model[point.y][point.x]){
+      return model[point.y][point.x];
+    }else{
+      return false;
+    }
+  },
+  run : function(nbIterations){
+    for(var i=0;i<nbIterations;i++){
+      for(var x=0;x<modelController.gridLength;x++){
+        var parentSituation = 7-parseInt(modelController.getParentSituation(x,modelController.currentLine),2);
+        var ruleString = parseInt(document.getElementById('input_rule').value).toString(2).padStart(8,'0');
+        char = ruleString.charAt(parentSituation);
+        if(char==='1'){
+          modelController.set({x:x,y:modelController.currentLine+1},true);
+          grid.drawModel();
+        }
+      }
+      modelController.currentLine++;
+    }
+  },
+  getParentSituation(col,line){
+    var cell1 = modelController.getValue({x:col-1,y:line});
+    var cell2 = modelController.getValue({x:col,y:line});
+    var cell3 = modelController.getValue({x:col+1,y:line});
+    return ""+~~cell1+~~cell2+~~cell3;
   }
-}
+};
   
 var model = [];
 init = function(){
   ruleDesigner.canvas = document.getElementById('canvas_rule');
   ruleDesigner.ctx = ruleDesigner.canvas.getContext("2d");
-  document.getElementById('input_rule').addEventListener('input',ruleDesigner.drawRule)
+  document.getElementById('input_rule').addEventListener('input',ruleDesigner.drawRule);
   window.addEventListener('resize', ruleDesigner.drawRule, false);
+  ruleDesigner.drawRule();
   
   grid.canvas = document.getElementById('canvas');
   grid.ctx = grid.canvas.getContext('2d');
   grid.canvas.addEventListener('mousedown',function(event){
     var point = {x:event.clientX-grid.canvas.offsetLeft,y:event.clientY-grid.canvas.offsetTop};
-    //grid.fillCell(grid.pixelToGrid(point));
-    modelController.set(grid.pixelToGrid(point),true);
-    grid.drawStuff();    
+    var cell = grid.pixelToGrid(point);
+    modelController.set(cell,!modelController.getValue(cell));
+    grid.drawStuff();
   });
   
   document.getElementById("input_cell").addEventListener('input',grid.drawStuff);
@@ -162,6 +194,9 @@ init = function(){
   // resize the canvas to fill browser window dynamically
   window.addEventListener('resize', grid.resizeCanvas, false);
   grid.resizeCanvas();
+  
+  document.getElementById("btn-run").addEventListener('click',function(){modelController.run(modelController.gridHeight)});
+  document.getElementById("btn-run1").addEventListener('click',function(){modelController.run(1)});
 };
 
 window.addEventListener("load", init());

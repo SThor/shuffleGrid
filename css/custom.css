@@ -8,5 +8,10 @@ canvas { display:block;margin:0; padding:0; } /* To remove the scrollbars */
   margin:0;
   padding: 0;
   height: 50px;
-  width:100%s;
+  width:100%;
+}
+
+.col-centered{
+    float: none;
+    margin: 0 auto;
 }
