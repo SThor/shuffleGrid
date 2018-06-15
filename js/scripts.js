@@ -35,6 +35,15 @@ var grid = {
     grid.ctx.strokeStyle = "black";
     grid.ctx.stroke();
   },
+
+  drawModel : function(){
+    for (var i = 0; i < model.length; i++) {
+      for (var j = 0; j < model[i].length; j++) {
+        if(model[i][j])
+        grid.fillCell({x:i,y:j})
+      }
+    }
+  },
   
   resizeCanvas : function() {
     grid.canvas.width = window.innerWidth;
@@ -80,6 +89,8 @@ var ruleDesigner = {
   canvas:null,
   ctx:null,
   drawRule : function(){
+    ruleDesigner.canvas.height = ruleDesigner.canvas.offsetHeight;
+    ruleDesigner.canvas.width = ruleDesigner.canvas.offsetWidth;
     ruleDesigner.ctx.clearRect(0,0,ruleDesigner.canvas.width,ruleDesigner.canvas.height);
     
     var ruleBitWidth = Math.floor((ruleDesigner.canvas.width/8));
@@ -113,21 +124,19 @@ var ruleDesigner = {
   }
 };
   
+var model = [];
 init = function(){
   ruleDesigner.canvas = document.getElementById('canvas_rule');
-  ruleDesigner.canvas.height = 50;
-  ruleDesigner.canvas.width = ruleDesigner.canvas.parentNode.width;
-  ruleDesigner.canvas.width = 500;
-  console.log("ruleDesigner.canvas.width",ruleDesigner.canvas.width)
   ruleDesigner.ctx = ruleDesigner.canvas.getContext("2d");
   document.getElementById('input_rule').addEventListener('input',ruleDesigner.drawRule)
+  window.addEventListener('resize', ruleDesigner.drawRule, false);
   
   grid.canvas = document.getElementById('canvas');
   grid.ctx = grid.canvas.getContext('2d');
-  grid.canvas.addEventListener('mousedown',function(){
+  grid.canvas.addEventListener('mousedown',function(event){
     var point = {x:event.clientX-grid.canvas.offsetLeft,y:event.clientY-grid.canvas.offsetTop};
-    grid.fillCell(grid.pixelToGrid(point));
-    
+    //grid.fillCell(grid.pixelToGrid(point));
+    model[point.x][point.y] = true    
   });
   
   document.getElementById("input_cell").addEventListener('input',grid.drawStuff);
