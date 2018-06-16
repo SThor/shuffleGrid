@@ -9,28 +9,22 @@ var grid = {
   canvas:null,
   ctx:null,
   cellWidth:10,
+  bh:0,
+  bw:0,
 
   drawBoard : function(){
-    grid.cellWidth = parseInt(document.getElementById("input_cell").value);
-    // Box width
-    var bw = grid.canvas.width - (grid.canvas.width%grid.cellWidth) +1;
-    // Box height
-    var bh = grid.canvas.height- (grid.canvas.height%grid.cellWidth) +1;
-    modelController.gridLength = (bw-1)/grid.cellWidth;
-    modelController.gridHeight = (bh-1)/grid.cellWidth;
-    
     grid.ctx.beginPath();
     
     var x;
-    for (x = 0; x <= bw; x += grid.cellWidth) {
+    for (x = 0; x <= grid.bw; x += grid.cellWidth) {
         grid.ctx.moveTo(0.5 + x, 0);
-        grid.ctx.lineTo(0.5 + x, bh);
+        grid.ctx.lineTo(0.5 + x, grid.bh);
     }
     
     
-    for (x = 0; x <= bh; x += grid.cellWidth) {
+    for (x = 0; x <= grid.bh; x += grid.cellWidth) {
         grid.ctx.moveTo(0, 0.5 + x);
-        grid.ctx.lineTo(bw, 0.5 + x);
+        grid.ctx.lineTo(grid.bw, 0.5 + x);
     }
     
     grid.ctx.strokeStyle = "black";
@@ -42,7 +36,7 @@ var grid = {
       if(model[i]){
         for (var j = 0; j < model[i].length; j++) {
           if(model[i][j])
-          grid.fillCell({x:i,y:j});
+          grid.fillCell({x:j,y:i});
         }
       }
     }
@@ -81,15 +75,19 @@ var grid = {
   
   drawStuff : function() {
     grid.ctx.clearRect(0, 0, grid.canvas.width, grid.canvas.height);
-    grid.drawBoard();
-    for (var i = 0; i < model.length; i++) {
-      if(model[i]){
-        for (var j = 0; j <model[i].length; j++) {
-          if(model[i][j])
-            grid.fillCell({x:j,y:i});
-        }
-      }
+    
+    grid.cellWidth = parseInt(document.getElementById("input_cell").value);
+    // Box width
+    grid.bw = grid.canvas.width - (grid.canvas.width%grid.cellWidth) +1;
+    // Box height
+    grid.bh = grid.canvas.height- (grid.canvas.height%grid.cellWidth) +1;
+    modelController.gridLength = (grid.bw-1)/grid.cellWidth;
+    modelController.gridHeight = (grid.bh-1)/grid.cellWidth;
+    
+    if(document.getElementById('check_borders').checked){
+      grid.drawBoard();
     }
+    grid.drawModel();
   }
 };
 
@@ -134,7 +132,7 @@ var ruleDesigner = {
 };
 
 var modelController = {
-  // le modèle est mode : tableau de ligne, avec chaque ligne qui est un tableau de case.
+  // le modèle est en mode : tableau de ligne, avec chaque ligne qui est un tableau de case.
   currentLine : 0,
   gridLength : 0,
   set : function(point,value){
@@ -158,9 +156,9 @@ var modelController = {
         char = ruleString.charAt(parentSituation);
         if(char==='1'){
           modelController.set({x:x,y:modelController.currentLine+1},true);
-          grid.drawModel();
         }
       }
+      grid.drawModel();
       modelController.currentLine++;
     }
   },
@@ -190,12 +188,13 @@ init = function(){
   });
   
   document.getElementById("input_cell").addEventListener('input',grid.drawStuff);
+  document.getElementById("check_borders").addEventListener('click',grid.drawStuff);
 
   // resize the canvas to fill browser window dynamically
   window.addEventListener('resize', grid.resizeCanvas, false);
   grid.resizeCanvas();
   
-  document.getElementById("btn-run").addEventListener('click',function(){modelController.run(modelController.gridHeight)});
+  document.getElementById("btn-run").addEventListener('click',function(){modelController.run(modelController.gridHeight-1)});
   document.getElementById("btn-run1").addEventListener('click',function(){modelController.run(1)});
 };
 
