@@ -167,6 +167,11 @@ var modelController = {
     var cell2 = modelController.getValue({x:col,y:line});
     var cell3 = modelController.getValue({x:col+1,y:line});
     return ""+~~cell1+~~cell2+~~cell3;
+  },
+  reset : function(){
+    modelController.currentLine = 0;
+    model = [];
+    grid.drawStuff();
   }
 };
   
@@ -196,6 +201,7 @@ init = function(){
   
   document.getElementById("btn-run").addEventListener('click',function(){modelController.run(modelController.gridHeight-1)});
   document.getElementById("btn-run1").addEventListener('click',function(){modelController.run(1)});
+  document.getElementById("btn-reset").addEventListener('click',modelController.reset);
 };
 
 window.addEventListener("load", init());
