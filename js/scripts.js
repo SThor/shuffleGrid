@@ -1,207 +1,109 @@
-var cellBorders = Object.freeze({
-  TOP:1,
-  BOTTOM:2,
-  RIGHT:3,
-  LEFT:4
-});
-
-var grid = {
+var canvas = {
   canvas:null,
   ctx:null,
-  cellWidth:10,
-  bh:0,
-  bw:0,
-
-  drawBoard : function(){
-    grid.ctx.beginPath();
-    
-    var x;
-    for (x = 0; x <= grid.bw; x += grid.cellWidth) {
-        grid.ctx.moveTo(0.5 + x, 0);
-        grid.ctx.lineTo(0.5 + x, grid.bh);
-    }
-    
-    
-    for (x = 0; x <= grid.bh; x += grid.cellWidth) {
-        grid.ctx.moveTo(0, 0.5 + x);
-        grid.ctx.lineTo(grid.bw, 0.5 + x);
-    }
-    
-    grid.ctx.strokeStyle = "black";
-    grid.ctx.stroke();
+  color_bg:"white",
+  color_main:"black",
+  padding:50,
+  settings:{
+    cellWidth:2,
+    radius:100
   },
-
-  drawModel : function(){
-    for (var i = 0; i < model.length; i++) {
-      if(model[i]){
-        for (var j = 0; j < model[i].length; j++) {
-          if(model[i][j])
-          grid.fillCell({x:j,y:i});
-        }
-      }
-    }
-  },
-  
+  palette:[
+    "#bbf67f",
+    "#a6df86",
+    "#91c88c",
+    "#7bb093",
+    "#669999"
+    ],
   resizeCanvas : function() {
-    grid.canvas.width = window.innerWidth;
-    grid.canvas.height = window.innerHeight - grid.canvas.offsetTop;
-  
+    //canvas.width = window.innerWidth;
+    //canvas.height = window.innerHeight - grid.canvas.offsetTop;
+    
+    var minSide = Math.min(window.innerWidth,window.innerHeight);
+    
+    canvas.canvas.width = (4/5)*minSide;
+    canvas.canvas.height = (4/5)*minSide;
+    
     /**
      * Your drawings need to be inside this function otherwise they will be reset when
      * you resize the browser window and the canvas goes will be cleared.
      */
-    grid.drawStuff();
+    canvas.drawStuff();
   },
   
-  fillCell : function(cell){
-    pixel = grid.gridToPixel(cell,cellBorders.TOP,cellBorders.LEFT);
-    grid.ctx.fillRect(pixel.x,pixel.y,grid.cellWidth,grid.cellWidth);
+  hexToRGB:function(hex){
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
   },
   
-  pixelToGrid : function(pixelPoint){
-    return {x:Math.floor((pixelPoint.x/grid.cellWidth)),y:Math.floor(pixelPoint.y/grid.cellWidth)};
-  },
-  
-  gridToPixel : function(cell,hBorder,vBorder){
-    var pixel = {x:cell.x*grid.cellWidth,y:cell.y*grid.cellWidth};
-    if(hBorder === cellBorders.BOTTOM){
-      pixel.x+=grid.cellWidth;
-    }
-    if(vBorder === cellBorders.RIGHT){
-      pixel.y+=grid.cellWidth;
-    }
-    return pixel;
-  },
-  
-  drawStuff : function() {
-    grid.ctx.clearRect(0, 0, grid.canvas.width, grid.canvas.height);
+  lerp:function(a,b,t){
+    var color1 = canvas.hexToRGB(a);
+    var color2 = canvas.hexToRGB(b);
     
-    grid.cellWidth = parseInt(document.getElementById("input_cell").value);
-    // Box width
-    grid.bw = grid.canvas.width - (grid.canvas.width%grid.cellWidth) +1;
-    // Box height
-    grid.bh = grid.canvas.height- (grid.canvas.height%grid.cellWidth) +1;
-    modelController.gridLength = (grid.bw-1)/grid.cellWidth;
-    modelController.gridHeight = (grid.bh-1)/grid.cellWidth;
+    return "rgb("+((color1.r*t)+(color2.r*1-t))+","+((color1.g*t)+(color2.g*1-t))+","+((color1.b*t)+(color2.b*1-t))+")";
+  },
+  
+  getRainbowColor:function(i, total){
+    var frequency = 0.3;
     
-    if(document.getElementById('check_borders').checked){
-      grid.drawBoard();
+    //value = Math.sin(frequency*increment)*amplitude + center;
+    
+    red   = Math.sin(frequency*i + 0) * 127 + 128;
+    green = Math.sin(frequency*i + 2) * 127 + 128;
+    blue  = Math.sin(frequency*i + 4) * 127 + 128;
+    return "rgba("+red+","+green+","+blue+","+0.1+")";
+  },
+  
+  drawStuff: function() {
+    var point;
+    var center = {"x":canvas.canvas.width/2,"y":canvas.canvas.height/2};
+    var bottomCenter = {"x":canvas.canvas.width/2,"y":canvas.canvas.height};
+    var topCenter = {"x":canvas.canvas.width/2,"y":0};
+    canvas.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    canvas.ctx.clearRect(0,0,canvas.canvas.width,canvas.canvas.height);
+    canvas.ctx.fillStyle = canvas.color_bg;
+    canvas.ctx.fillRect(0,0,canvas.canvas.width,canvas.canvas.height);
+    canvas.ctx.fillStyle = canvas.color_main;
+    for(var x=0;x<canvas.canvas.width;x+=canvas.settings.cellWidth){
+      for(var y=0;y<canvas.canvas.height;y+=canvas.settings.cellWidth){
+        point = {"x":x,"y":y};
+        canvas.ctx.fillStyle = "rgba(0,0,0,"+(((point.x ^ point.y) % 3 )/6)+")";
+        if(canvas.getCondition(point)) canvas.fillCell(point);
+        
+        canvas.ctx.fillStyle = canvas.color_main;
+        if(canvas.getConditionBis(point)) canvas.fillCell(point);
+      }
     }
-    grid.drawModel();
+  },
+  
+  distance: function(point1, point2){
+    var a = point1.x - point2.x;
+    var b = point1.y - point2.y;
+    return Math.sqrt( a*a + b*b );
+  },
+  
+  getCondition: function(point){
+    var center = {"x":canvas.canvas.width/2,"y":canvas.canvas.height/2};
+    var bottomCenter = {"x":canvas.canvas.width/2,"y":canvas.canvas.height};
+    var topCenter = {"x":canvas.canvas.width/2,"y":0};
+    return (canvas.distance(point,center)<canvas.settings.radius|| canvas.distance(point,bottomCenter)<canvas.settings.radius || canvas.distance(point,topCenter)<canvas.settings.radius);//&& (((point.x ^ point.y) % 3 ) %2 === 1);
+  },
+  
+  getConditionBis: function(point){
+    var center = {"x":canvas.canvas.width/2,"y":canvas.canvas.height/2};
+    return canvas.distance(point,center)<canvas.settings.radius && (((point.x ^ point.y) % 3 ) %2 === 1);
+  },
+  
+  fillCell: function(point) {
+    canvas.ctx.fillRect(point.x,point.y,canvas.settings.cellWidth,canvas.settings.cellWidth);
   }
 };
 
-var ruleDesigner = {
-  cellWidth:15,
-  canvas:null,
-  ctx:null,
-  drawRule : function(){
-    ruleDesigner.canvas.height = ruleDesigner.canvas.offsetHeight;
-    ruleDesigner.canvas.width = ruleDesigner.canvas.offsetWidth;
-    ruleDesigner.ctx.clearRect(0,0,ruleDesigner.canvas.width,ruleDesigner.canvas.height);
-    
-    var ruleBitWidth = Math.floor((ruleDesigner.canvas.width/8));
-    var vOffset = Math.floor((ruleDesigner.canvas.height - 2*ruleDesigner.cellWidth)/3);
-    var hOffsetTOP = Math.floor((ruleBitWidth-3*ruleDesigner.cellWidth)/2);
-    var hOffsetBOTTOM = Math.floor((ruleBitWidth-ruleDesigner.cellWidth)/2);
-    var ruleString = parseInt(document.getElementById('input_rule').value).toString(2).padStart(8,'0');
-    console.log('rule',ruleString);
-    
-    var pattern, char, i, j;
-    
-    for(i=0;i<8;i++){
-      ruleDesigner.ctx.strokeRect(i*ruleBitWidth+0.5,0.5,ruleBitWidth,ruleDesigner.canvas.height-0.5);
-      pattern = (7-i).toString(2).padStart(3,'0');
-      for(j=0;j<3;j++){
-        char = pattern.charAt(j);
-        if(char==='1'){
-          ruleDesigner.ctx.fillRect(i*ruleBitWidth+hOffsetTOP+j*ruleDesigner.cellWidth+0.5,vOffset+0.5,ruleDesigner.cellWidth,ruleDesigner.cellWidth);
-        }else{
-          ruleDesigner.ctx.strokeRect(i*ruleBitWidth+hOffsetTOP+j*ruleDesigner.cellWidth+0.5,vOffset+0.5,ruleDesigner.cellWidth,ruleDesigner.cellWidth);
-        }
-      }
-      char = ruleString.charAt(i);
-      if(char==='1'){
-        ruleDesigner.ctx.fillRect(i*ruleBitWidth+hOffsetBOTTOM+0.5,2*vOffset+ruleDesigner.cellWidth+0.5,ruleDesigner.cellWidth,ruleDesigner.cellWidth);
-      }else{
-        ruleDesigner.ctx.strokeRect(i*ruleBitWidth+hOffsetBOTTOM+0.5,2*vOffset+ruleDesigner.cellWidth+0.5,ruleDesigner.cellWidth,ruleDesigner.cellWidth);
-      }
-    }
-    
-  }
-};
-
-var modelController = {
-  // le modèle est en mode : tableau de ligne, avec chaque ligne qui est un tableau de case.
-  currentLine : 0,
-  gridLength : 0,
-  set : function(point,value){
-    if(!model[point.y]){
-      model[point.y] = [];
-    }
-    model[point.y][point.x] = value;
-  },
-  getValue : function(point){
-    if(model[point.y] && model[point.y][point.x]){
-      return model[point.y][point.x];
-    }else{
-      return false;
-    }
-  },
-  run : function(nbIterations){
-    for(var i=0;i<nbIterations;i++){
-      for(var x=0;x<modelController.gridLength;x++){
-        var parentSituation = 7-parseInt(modelController.getParentSituation(x,modelController.currentLine),2);
-        var ruleString = parseInt(document.getElementById('input_rule').value).toString(2).padStart(8,'0');
-        char = ruleString.charAt(parentSituation);
-        if(char==='1'){
-          modelController.set({x:x,y:modelController.currentLine+1},true);
-        }
-      }
-      grid.drawModel();
-      modelController.currentLine++;
-    }
-  },
-  getParentSituation(col,line){
-    var cell1 = modelController.getValue({x:col-1,y:line});
-    var cell2 = modelController.getValue({x:col,y:line});
-    var cell3 = modelController.getValue({x:col+1,y:line});
-    return ""+~~cell1+~~cell2+~~cell3;
-  },
-  reset : function(){
-    modelController.currentLine = 0;
-    model = [];
-    grid.drawStuff();
-  }
-};
-  
-var model = [];
-init = function(){
-  ruleDesigner.canvas = document.getElementById('canvas_rule');
-  ruleDesigner.ctx = ruleDesigner.canvas.getContext("2d");
-  document.getElementById('input_rule').addEventListener('input',ruleDesigner.drawRule);
-  window.addEventListener('resize', ruleDesigner.drawRule, false);
-  ruleDesigner.drawRule();
-  
-  grid.canvas = document.getElementById('canvas');
-  grid.ctx = grid.canvas.getContext('2d');
-  grid.canvas.addEventListener('mousedown',function(event){
-    var point = {x:event.clientX-grid.canvas.offsetLeft,y:event.clientY-grid.canvas.offsetTop};
-    var cell = grid.pixelToGrid(point);
-    modelController.set(cell,!modelController.getValue(cell));
-    grid.drawStuff();
-  });
-  
-  document.getElementById("input_cell").addEventListener('input',grid.drawStuff);
-  document.getElementById("check_borders").addEventListener('click',grid.drawStuff);
-
-  // resize the canvas to fill browser window dynamically
-  window.addEventListener('resize', grid.resizeCanvas, false);
-  grid.resizeCanvas();
-  
-  document.getElementById("btn-run").addEventListener('click',function(){modelController.run(modelController.gridHeight-1)});
-  document.getElementById("btn-run1").addEventListener('click',function(){modelController.run(1)});
-  document.getElementById("btn-reset").addEventListener('click',modelController.reset);
-};
-
-window.addEventListener("load", init());
+canvas.canvas = document.getElementById('canvas');
+canvas.ctx = canvas.canvas.getContext('2d');
+window.addEventListener('resize', canvas.resizeCanvas, false);
+canvas.resizeCanvas();
