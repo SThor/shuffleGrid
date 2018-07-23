@@ -6,7 +6,8 @@ var canvas = {
   padding:50,
   settings:{
     cellWidth:2,
-    radius:100
+    radius:100,
+    modulo:3
   },
   palette:[
     "#bbf67f",
@@ -71,7 +72,7 @@ var canvas = {
     for(var x=0;x<canvas.canvas.width;x+=canvas.settings.cellWidth){
       for(var y=0;y<canvas.canvas.height;y+=canvas.settings.cellWidth){
         point = {"x":x,"y":y};
-        canvas.ctx.fillStyle = "rgba(0,0,0,"+(((point.x ^ point.y) % 3 )/6)+")";
+        canvas.ctx.fillStyle = "rgba(0,0,0,"+(((point.x ^ point.y) % canvas.settings.modulo )/(canvas.settings.modulo*2))+")";
         if(canvas.getCondition(point)) canvas.fillCell(point);
         
         canvas.ctx.fillStyle = canvas.color_main;
@@ -90,12 +91,13 @@ var canvas = {
     var center = {"x":canvas.canvas.width/2,"y":canvas.canvas.height/2};
     var bottomCenter = {"x":canvas.canvas.width/2,"y":canvas.canvas.height};
     var topCenter = {"x":canvas.canvas.width/2,"y":0};
-    return (canvas.distance(point,center)<canvas.settings.radius|| canvas.distance(point,bottomCenter)<canvas.settings.radius || canvas.distance(point,topCenter)<canvas.settings.radius);//&& (((point.x ^ point.y) % 3 ) %2 === 1);
+    return (/*canvas.distance(point,center)<canvas.settings.radius|| */canvas.distance(point,bottomCenter)<canvas.settings.radius || canvas.distance(point,topCenter)<canvas.settings.radius);//&& (((point.x ^ point.y) % 3 ) %2 === 1);
   },
   
   getConditionBis: function(point){
     var center = {"x":canvas.canvas.width/2,"y":canvas.canvas.height/2};
-    return canvas.distance(point,center)<canvas.settings.radius && (((point.x ^ point.y) % 3 ) %2 === 1);
+    var topCenter = {"x":canvas.canvas.width/2,"y":0};
+    return (canvas.distance(point,center)<canvas.settings.radius || canvas.distance(point,topCenter)<canvas.settings.radius) && (((point.x ^ point.y) % canvas.settings.modulo ) %2 === 1);
   },
   
   fillCell: function(point) {
