@@ -1,1 +1,1 @@
-# cellular-automata
+# shuffle grid
