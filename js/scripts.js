@@ -19,7 +19,7 @@ function hexToRGB(hex, alpha) {
 var canvas = {
   canvas:null,
   ctx:null,
-  color_bg:"#F4E8C1", //"white"
+  color_bg:"#F3ECE2", //"white"
   color_main:"black",
   padding:50,
   settings:{
@@ -109,9 +109,9 @@ var canvas = {
         var hex = canvas.palette[getRandomInt(0,canvas.palette.length-1)];
         var hex2 = canvas.palette[getRandomInt(0,canvas.palette.length-1)];
         var gradient = canvas.ctx.createLinearGradient(0,0,getRandomInt(0,cellLength),cellLength);
-        gradient.addColorStop(0,hexToRGB(hex,0.2));
-        gradient.addColorStop(1,hexToRGB(hex2,0.2));
-        canvas.ctx.strokeStyle = gradient
+        gradient.addColorStop(0,hexToRGB("#000000",0.2));
+        gradient.addColorStop(1,hexToRGB("#ebebeb",0.2));
+        canvas.ctx.strokeStyle = gradient;
         canvas.drawCell(i,j,cellLength);
         canvas.drawCell(i,j,cellLength);
         canvas.drawCell(i,j,cellLength);
@@ -147,13 +147,15 @@ var canvas = {
   },
   
   drawBackground: function(){
-    canvas.ctx.fillStyle = "white";
+    //canvas.ctx.fillStyle = "white";
+    canvas.ctx.fillStyle = canvas.color_bg;
     canvas.ctx.fillRect(0,0,canvas.canvas.width,canvas.canvas.height);
     var i;
-    // canvas.ctx.fillStyle = canvas.color_bg;
-    // for(i=0;i<10000;i++){
-    //   canvas.ctx.fillRect(getRandomInt(canvas.padding,canvas.canvas.width-canvas.padding),getRandomInt(canvas.padding,canvas.canvas.height-canvas.padding),1,1);
-    // }
+    //canvas.ctx.fillStyle = canvas.color_bg;
+    canvas.ctx.fillStyle = "white";
+    for(i=0;i<10000;i++){
+      canvas.ctx.fillRect(getRandomInt(canvas.padding,canvas.canvas.width-canvas.padding),getRandomInt(canvas.padding,canvas.canvas.height-canvas.padding),1,1);
+    }
   },
   
   distance: function(point1, point2){
