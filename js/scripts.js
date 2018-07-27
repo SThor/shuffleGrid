@@ -23,7 +23,7 @@ var canvas = {
   color_main:"black",
   padding:50,
   settings:{
-    cellsInWidth : 10,
+    cellsInWidth : 5,
     //cellWidth:50,
     spacing:10,
     radius:100,
@@ -109,8 +109,8 @@ var canvas = {
         var hex = canvas.palette[getRandomInt(0,canvas.palette.length-1)];
         var hex2 = canvas.palette[getRandomInt(0,canvas.palette.length-1)];
         var gradient = canvas.ctx.createLinearGradient(0,0,getRandomInt(0,cellLength),cellLength);
-        gradient.addColorStop(0,hexToRGB(hex,0.2));
-        gradient.addColorStop(1,hexToRGB(hex2,0.2));
+        gradient.addColorStop(0,hexToRGB(hex,0.4));
+        gradient.addColorStop(1,hexToRGB(hex2,0.4));
         canvas.ctx.strokeStyle = gradient
         canvas.drawCell(i,j,cellLength);
         canvas.drawCell(i,j,cellLength);
