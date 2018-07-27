@@ -23,7 +23,7 @@ var canvas = {
   color_main:"black",
   padding:50,
   settings:{
-    cellsInWidth : 5,
+    cellsInWidth : 3,
     //cellWidth:50,
     spacing:10,
     radius:100,
@@ -134,7 +134,7 @@ var canvas = {
     canvas.ctx.beginPath();
     // canvas.ctx.strokeStyle = 'rgba(0,' + Math.floor(255 - 42.5 * i) + ',' +
     //                   Math.floor(255 - 42.5 * j) + ',0.2)';
-    for(it=0;it<5;it++){
+    for(it=0;it<20;it++){
       cp1x = getRandomInt(0,cellLength);
       cp2x = getRandomInt(0,cellLength);
       cp3x = getRandomInt(0,cellLength);
