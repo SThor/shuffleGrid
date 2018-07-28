@@ -147,14 +147,28 @@ var canvas = {
   },
   
   drawBackground: function(){
-    //canvas.ctx.fillStyle = "white";
-    canvas.ctx.fillStyle = canvas.color_bg;
-    canvas.ctx.fillRect(0,0,canvas.canvas.width,canvas.canvas.height);
-    var i;
-    //canvas.ctx.fillStyle = canvas.color_bg;
-    canvas.ctx.fillStyle = "white";
-    for(i=0;i<10000;i++){
-      canvas.ctx.fillRect(getRandomInt(canvas.padding,canvas.canvas.width-canvas.padding),getRandomInt(canvas.padding,canvas.canvas.height-canvas.padding),1,1);
+    var i,j;
+    
+    if(false){
+      canvas.ctx.fillStyle = canvas.color_bg;
+      canvas.ctx.fillRect(0,0,canvas.canvas.width,canvas.canvas.height);
+      canvas.ctx.fillStyle = canvas.color_bg;
+      canvas.ctx.fillStyle = "white";
+      for(i=0;i<30000;i++){
+        canvas.ctx.fillStyle = hexToRGB("#ffffff",getRandomInt(2,10)*0.1);
+        canvas.ctx.fillRect(getRandomInt(canvas.padding,canvas.canvas.width-canvas.padding),getRandomInt(canvas.padding,canvas.canvas.height-canvas.padding),1,1);
+      }
+    }else{
+      canvas.ctx.fillStyle = "white";
+      canvas.ctx.fillRect(0,0,canvas.canvas.width,canvas.canvas.height);
+      canvas.ctx.fillStyle = canvas.color_bg;
+      canvas.ctx.fillRect(canvas.padding,canvas.padding,canvas.canvas.width-2*canvas.padding,canvas.canvas.height-2*canvas.padding);
+      for(i=0;i<canvas.canvas.width - 2*canvas.padding;i++){
+        for(j=0;j<canvas.canvas.width - 2*canvas.padding;j++){
+          canvas.ctx.fillStyle = hexToRGB("#ffffff",getRandomInt(2,10)*0.05);
+          canvas.ctx.fillRect(i+canvas.padding,j+canvas.padding,1,1);
+        }
+      }
     }
   },
   
